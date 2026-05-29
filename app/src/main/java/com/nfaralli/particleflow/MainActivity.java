@@ -2,11 +2,16 @@ package com.nfaralli.particleflow;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 /**
@@ -25,6 +30,21 @@ public class MainActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.particles);
+
+        // Edge-to-Edge: allow content to draw under system bars.
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        hideSystemBars();
+
+        // Keep the gear icon below the status bar area even when bars are transiently shown.
+        View gearView = findViewById(R.id.gear_view);
+        ViewCompat.setOnApplyWindowInsetsListener(gearView, (v, insets) -> {
+            int topInset = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top;
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            params.topMargin = topInset;
+            v.setLayoutParams(params);
+            return insets;
+        });
+
         mGLView = (ParticlesSurfaceView)findViewById(R.id.particles_view);
         mSettingsView = new SettingsView(this);
         mSettingsDialog = getSettingsDialog();
@@ -52,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        hideSystemBars();
         SharedPreferences prefs =
                 getSharedPreferences(ParticlesSurfaceView.SHARED_PREFS_NAME, MODE_PRIVATE);
         if (prefs.getBoolean("ShowSettingsHint", true)) {
@@ -61,6 +82,15 @@ public class MainActivity extends AppCompatActivity {
             editor.commit();
         }
         mGLView.onResume();
+    }
+
+    private void hideSystemBars() {
+        View rootView = findViewById(android.R.id.content);
+        WindowInsetsControllerCompat insetsController =
+                new WindowInsetsControllerCompat(getWindow(), rootView);
+        insetsController.hide(WindowInsetsCompat.Type.systemBars());
+        insetsController.setSystemBarsBehavior(
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
     }
 
     Dialog getSettingsDialog() {
