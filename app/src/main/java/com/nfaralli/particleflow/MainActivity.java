@@ -1,7 +1,7 @@
 package com.nfaralli.particleflow;
 
-import android.app.Activity;
-import android.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -14,7 +14,7 @@ import android.widget.Toast;
  * Just create a GLSurfaceView and set it as the content view.
  * All the logic is in the GLSurfaceView, especially its renderer.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
     private ParticlesSurfaceView mGLView;
     private GearView mGearView;

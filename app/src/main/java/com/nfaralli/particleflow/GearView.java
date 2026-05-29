@@ -4,9 +4,9 @@ import android.content.Context;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.widget.ImageView;
+import androidx.appcompat.widget.AppCompatImageView;
 
-public class GearView extends ImageView {
+public class GearView extends AppCompatImageView {
 
     // Array of resource IDs for the gear animation. A negative index is used to indicate that the
     // gear is hidden.

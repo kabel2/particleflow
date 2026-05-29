@@ -5,14 +5,14 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
+import androidx.appcompat.widget.AppCompatEditText;
 import android.widget.TextView;
 
 /**
  * EditText class with min and max values.
  * The text is validated when the user presses the Done button, or when the focus is lost.
  */
-public class ValidatedEditText extends EditText implements TextView.OnEditorActionListener,
+public class ValidatedEditText extends AppCompatEditText implements TextView.OnEditorActionListener,
         View.OnFocusChangeListener{
 
     public interface OnTextChangedListener {
@@ -55,7 +55,7 @@ public class ValidatedEditText extends EditText implements TextView.OnEditorActi
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         if (actionId == EditorInfo.IME_ACTION_DONE) {
-            validateText((EditText) v);
+            validateText((AppCompatEditText) v);
             return true;
         }
         return false;
@@ -64,14 +64,14 @@ public class ValidatedEditText extends EditText implements TextView.OnEditorActi
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
         if (hasFocus) {
-            mInitialValue = Integer.parseInt(((EditText) v).getText().toString());
+            mInitialValue = Integer.parseInt(((AppCompatEditText) v).getText().toString());
         } else {
-            validateText((EditText) v);
+            validateText((AppCompatEditText) v);
         }
     }
 
     // Make sure the value contained in the EditText is valid, change it otherwise.
-    private void validateText(EditText v) {
+    private void validateText(AppCompatEditText v) {
         Integer value;
         String initialValueStr = v.getText().toString();
         if (initialValueStr.equals("")) {

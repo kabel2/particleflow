@@ -15,18 +15,20 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.Log;
-import android.support.v8.renderscript.*;
 
 /**
  * Renderer in charge of drawing the particles.
- * Computing the particles trajectory is quite expensive and slow in java, hence the use of
- * renderscript.
+ * Computing the particles trajectory is done via a native C++ library (JNI).
  * The loadShader and loadGlError methods are taken from a code sample of the Android tutorial:
  * http://developer.android.com/training/graphics/opengl/environment.html
  */
 public class ParticlesRenderer implements GLSurfaceView.Renderer {
 
     private static final String TAG = "ParticlesRenderer";
+    
+    static {
+        System.loadLibrary("particleflow");
+    }
     
     private FloatBuffer mPointVertices;
     private FloatBuffer mPointColors;
@@ -46,20 +48,14 @@ public class ParticlesRenderer implements GLSurfaceView.Renderer {
     private int mWidth;
     private int mHeight;
     
-    private RenderScript mRS;
-    private ScriptC_particleflow mScript;
     private Boolean initialized = false;
     private Boolean posDirty = false;
-    private Allocation indices;
-    private Allocation touch;
-    private Allocation position;
-    private Allocation delta;
-    private Allocation color;
     private int mNumTouch;
     private int mPartCount;
     private int mParticleSize;
     private float[] touchPos;
     private float[] pos;
+    private float[] delta;
     private float[] col;
 
     private final String mVertexShader =
@@ -88,8 +84,6 @@ public class ParticlesRenderer implements GLSurfaceView.Renderer {
     public ParticlesRenderer(Context context) {
         mPrefs = context.getSharedPreferences(ParticlesSurfaceView.SHARED_PREFS_NAME,
                 Context.MODE_PRIVATE);
-        mRS = RenderScript.create(context);
-        mScript = new ScriptC_particleflow(mRS);
         init();
     }
 
@@ -108,8 +102,6 @@ public class ParticlesRenderer implements GLSurfaceView.Renderer {
 
     /**
      * Initialization of member variables.
-     * Variables which interact directly with the script (e.g. allocations) are initialized in
-     * initScript.
      */
     private void init() {
         mPartCount = mPrefs.getInt("NumParticles", ParticlesSurfaceView.DEFAULT_NUM_PARTICLES);
@@ -117,6 +109,7 @@ public class ParticlesRenderer implements GLSurfaceView.Renderer {
         mNumTouch = mPrefs.getInt("NumAttPoints", ParticlesSurfaceView.DEFAULT_MAX_NUM_ATT_POINTS);
         touchPos = new float[2 * mNumTouch];
         pos = new float[2 * mPartCount];
+        delta = new float[2 * mPartCount];
         col = new float[4 * mPartCount];
         mPointVertices = ByteBuffer.allocateDirect(mPartCount * 2 * 4)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
@@ -125,8 +118,8 @@ public class ParticlesRenderer implements GLSurfaceView.Renderer {
     }
 
     // Set the position of the pointer 'index'.
-    // This does NOT update Allocation touch (i.e. it does not update the script).
-    // Use syncTouch() to update the Allocation touch with these new coordinates.
+    // This does NOT update the native layer.
+    // Use syncTouch() to signal that touch data is ready.
     public void setTouch(int index, float x, float y){
     	if(index >= mNumTouch) {
     		return;
@@ -137,14 +130,25 @@ public class ParticlesRenderer implements GLSurfaceView.Renderer {
         posDirty = true;
     }
     
-    // Sync the Allocation touch.
+    // Sync the touch data.
     public void syncTouch() {
     	if(!posDirty) {
     		return;
     	}
-    	touch.copyFrom(touchPos);
     	posDirty = false;
     }
+
+    private native void nativeInitParticles(float[] pos, float[] delta, float[] color,
+            int count, float width, float height,
+            float slowHue, float slowSaturation, float slowValue,
+            float fastHue, float fastSaturation, float fastValue, int hueDirection);
+
+    private native void nativeUpdateParticles(float[] pos, float[] delta, float[] color,
+            int count, float width, float height,
+            float[] touchPos, int numTouch,
+            float attractionCoef, float dragCoef,
+            float slowHue, float slowSaturation, float slowValue,
+            float fastHue, float fastSaturation, float fastValue, int hueDirection);
 
     /**
      * Creates the program based on the vertex and fragment shaders.
@@ -186,12 +190,12 @@ public class ParticlesRenderer implements GLSurfaceView.Renderer {
 
     /**
      * Called when starting the app, after a pause/resume, or when the screen orientation changes.
-     * Sets the initial attraction points and distributes all the particles uniformly over a disk
-     * (by calling the initParticles function of the script).
-     * It also allocates all the memory required for the script (Cf. Allocation.createSized()).
+     * Sets the initial attraction points and distributes all the particles uniformly over a disk.
      */
     @Override
     public void onSurfaceChanged(GL10 unused, int width, int height) {
+    	int oldWidth = mWidth;
+    	int oldHeight = mHeight;
     	mWidth = width;
     	mHeight = height;
         GLES20.glViewport(0, 0, width, height);
@@ -202,68 +206,38 @@ public class ParticlesRenderer implements GLSurfaceView.Renderer {
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
         
-        if(mWidth == mScript.get_width() && mHeight == mScript.get_height() && initialized)
+        if(width == oldWidth && height == oldHeight && initialized)
         	return; // onSurfaceChanged called after resuming the activity. check before reinitialize.
         initScript(false);
     }
 
     /**
-     * Initialize all the scrip parameters.
-     *
-     * @param forceAllocationsInit: set to true to force (re)initializing the Allocations.
+     * Initialize all script parameters and (re)initialize native allocations if needed.
      */
     private void initScript(boolean forceAllocationsInit) {
-        mScript.set_width(mWidth);
-        mScript.set_height(mHeight);
         float hsv[] = new float[3];
         Color.colorToHSV(mPrefs.getInt("SlowColor", ParticlesSurfaceView.DEFAULT_SLOW_COLOR), hsv);
-        mScript.set_slowHue(hsv[0] / 360.f);
-        mScript.set_slowSaturation(hsv[1]);
-        mScript.set_slowValue(hsv[2]);
+        float slowHue = hsv[0] / 360.f;
+        float slowSaturation = hsv[1];
+        float slowValue = hsv[2];
         Color.colorToHSV(mPrefs.getInt("FastColor", ParticlesSurfaceView.DEFAULT_FAST_COLOR), hsv);
-        mScript.set_fastHue(hsv[0] / 360.f);
-        mScript.set_fastSaturation(hsv[1]);
-        mScript.set_fastValue(hsv[2]);
-        mScript.set_hueDirection(mPrefs.getInt("HueDirection",
-                ParticlesSurfaceView.DEFAULT_HUE_DIRECTION));
-        mScript.set_f01AttractionCoef(mPrefs.getInt("F01Attraction",
-                ParticlesSurfaceView.DEFAULT_F01_ATTRACTION_COEF));
-        mScript.set_f01DragCoef(1 - mPrefs.getInt("F01Drag",
-                ParticlesSurfaceView.DEFAULT_F01_DRAG_COEF) / 100.f);
-        initAllocations(forceAllocationsInit);
+        float fastHue = hsv[0] / 360.f;
+        float fastSaturation = hsv[1];
+        float fastValue = hsv[2];
+        int hueDirection = mPrefs.getInt("HueDirection",
+                ParticlesSurfaceView.DEFAULT_HUE_DIRECTION);
+        
+        if(!initialized || forceAllocationsInit) {
+            nativeInitParticles(pos, delta, col, mPartCount, mWidth, mHeight,
+                    slowHue, slowSaturation, slowValue,
+                    fastHue, fastSaturation, fastValue, hueDirection);
+            initialized = true;
+        }
         resetAttractionPoints();
     }
 
     /**
-     * Initialize the Allocations used by the script. If it was already initialized and forceInit is
-     * set to false, then return immediately.
-     *
-     * @param forceInit: set to true to force (re)initializing the Allocations.
-     */
-    private void initAllocations(boolean forceInit) {
-        if(initialized && !forceInit) {
-            return;
-        }
-        int indices_[] = new int[mPartCount];
-        indices = Allocation.createSized(mRS, Element.I32(mRS), mPartCount);
-        for(int i=0; i<mPartCount; i++) {
-            indices_[i] = i;
-        }
-        indices.copyFrom(indices_);
-        touch = Allocation.createSized(mRS, Element.F32_2(mRS), mNumTouch);
-        position = Allocation.createSized(mRS, Element.F32_2(mRS), mPartCount);
-        delta = Allocation.createSized(mRS, Element.F32_2(mRS), mPartCount);
-        color = Allocation.createSized(mRS, Element.F32_4(mRS), mPartCount);
-        mScript.bind_gTouch(touch);
-        mScript.bind_position(position);
-        mScript.bind_delta(delta);
-        mScript.bind_color(color);
-        initialized = true;
-    }
-
-    /**
-     * Reset the attraction points and particles. Allocations must have been initialized previously
-     * by initAllocations.
+     * Reset the attraction points and particles.
      */
     public void resetAttractionPoints() {
         if (initialized && mWidth > 0 && mHeight > 0) {
@@ -275,7 +249,6 @@ public class ParticlesRenderer implements GLSurfaceView.Renderer {
                         (float) (mHeight / 2 + l * Math.cos(i * 2 * Math.PI / mNumTouch)));
             }
             syncTouch();
-            mScript.invoke_initParticles();
         }
     }
 
@@ -293,9 +266,27 @@ public class ParticlesRenderer implements GLSurfaceView.Renderer {
         GLES20.glUniformMatrix4fv(muMVPMatrixHandle, 1, false, mMVPMatrix, 0);
         GLES20.glUniform1f(muPointSizeHandle, mParticleSize);
 
-        mScript.forEach_updateParticles(indices);
-        // There might be a better way to copy an Allocation to a FloatBuffer...
-        position.copyTo(pos);
+        float hsv[] = new float[3];
+        Color.colorToHSV(mPrefs.getInt("SlowColor", ParticlesSurfaceView.DEFAULT_SLOW_COLOR), hsv);
+        float slowHue = hsv[0] / 360.f;
+        float slowSaturation = hsv[1];
+        float slowValue = hsv[2];
+        Color.colorToHSV(mPrefs.getInt("FastColor", ParticlesSurfaceView.DEFAULT_FAST_COLOR), hsv);
+        float fastHue = hsv[0] / 360.f;
+        float fastSaturation = hsv[1];
+        float fastValue = hsv[2];
+        int hueDirection = mPrefs.getInt("HueDirection",
+                ParticlesSurfaceView.DEFAULT_HUE_DIRECTION);
+        float f01AttractionCoef = mPrefs.getInt("F01Attraction",
+                ParticlesSurfaceView.DEFAULT_F01_ATTRACTION_COEF);
+        float f01DragCoef = 1 - mPrefs.getInt("F01Drag",
+                ParticlesSurfaceView.DEFAULT_F01_DRAG_COEF) / 100.f;
+
+        nativeUpdateParticles(pos, delta, col, mPartCount, mWidth, mHeight, touchPos, mNumTouch,
+                f01AttractionCoef, f01DragCoef,
+                slowHue, slowSaturation, slowValue,
+                fastHue, fastSaturation, fastValue, hueDirection);
+        
         mPointVertices.position(0);
         mPointVertices.put(pos);
         mPointVertices.position(0);
@@ -303,7 +294,6 @@ public class ParticlesRenderer implements GLSurfaceView.Renderer {
         checkGlError("glVertexAttribPointer maPosition");
         GLES20.glEnableVertexAttribArray(maPositionHandle);
 
-        color.copyTo(col);
         mPointColors.position(0);
         mPointColors.put(col);
         mPointColors.position(0);
@@ -347,13 +337,6 @@ public class ParticlesRenderer implements GLSurfaceView.Renderer {
 
     /**
      * Utility method for compiling a OpenGL shader.
-     *
-     * <p><strong>Note:</strong> When developing shaders, use the checkGlError()
-     * method to debug shader coding errors.</p>
-     *
-     * @param type - Vertex or fragment shader type.
-     * @param shaderCode - String containing the shader code.
-     * @return - Returns an id for the shader.
      */
     public int loadShader(int type, String shaderCode){
 
@@ -369,16 +352,7 @@ public class ParticlesRenderer implements GLSurfaceView.Renderer {
     }
 
     /**
-    * Utility method for debugging OpenGL calls. Provide the name of the call
-    * just after making it:
-    *
-    * <pre>
-    * mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
-    * ParticlesRenderer.checkGlError("glGetUniformLocation");</pre>
-    *
-    * If the operation is not successful, the check throws an error.
-    *
-    * @param glOperation - Name of the OpenGL call to check.
+    * Utility method for debugging OpenGL calls.
     */
     public void checkGlError(String glOperation) {
         int error;

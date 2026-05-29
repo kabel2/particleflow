@@ -1,13 +1,15 @@
 package com.nfaralli.particleflow;
 
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
-public class WPPreferenceActivity extends PreferenceActivity {
+public class WPPreferenceActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // use old API for backward compatibility.
-        addPreferencesFromResource(R.xml.wallpaper_preference);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(android.R.id.content, new WPPreferenceFragment())
+                .commit();
     }
 }
