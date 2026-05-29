@@ -1,13 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "19.1"
+    namespace 'com.nfaralli.particleflow'
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.nfaralli.particleflow"
-        minSdkVersion 8
-        targetSdkVersion 22
+        minSdk 21
+        targetSdk 33
+        versionCode 10201
+        versionName "1.2.1"
         renderscriptTargetApi 18
         renderscriptSupportModeEnabled true
     }
