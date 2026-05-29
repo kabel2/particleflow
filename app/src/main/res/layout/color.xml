@@ -16,13 +16,13 @@
         android:inputType="number"
         android:ems="10"
         android:layout_weight="1"
-        android:layout_marginRight="6dp" />
+        android:layout_marginEnd="6dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="G:"
-        android:layout_marginLeft="3dp" />
+        android:layout_marginStart="3dp" />
 
     <com.nfaralli.particleflow.ValidatedEditText
         android:id="@+id/bgColorG"
@@ -37,7 +37,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="B:"
-        android:layout_marginLeft="6dp" />
+        android:layout_marginStart="6dp" />
 
     <com.nfaralli.particleflow.ValidatedEditText
         android:id="@+id/bgColorB"

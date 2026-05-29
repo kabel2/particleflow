@@ -35,20 +35,17 @@ public class MainActivity extends AppCompatActivity {
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         hideSystemBars();
 
+        mGLView = (ParticlesSurfaceView)findViewById(R.id.particles_view);
+        mGearView = (GearView)findViewById(R.id.gear_view);
+
         // Keep the gear icon below the status bar area even when bars are transiently shown.
-        View gearView = findViewById(R.id.gear_view);
-        ViewCompat.setOnApplyWindowInsetsListener(gearView, (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(mGearView, (v, insets) -> {
             int topInset = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top;
             ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
             params.topMargin = topInset;
             v.setLayoutParams(params);
             return insets;
         });
-
-        mGLView = (ParticlesSurfaceView)findViewById(R.id.particles_view);
-        mSettingsView = new SettingsView(this);
-        mSettingsDialog = getSettingsDialog();
-        mGearView = (GearView)findViewById(R.id.gear_view);
         mGearView.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (mGearView.isGearVisible()) {
@@ -79,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.settings_hint, Toast.LENGTH_LONG).show();
             SharedPreferences.Editor editor = prefs.edit();
             editor.putBoolean("ShowSettingsHint", false);
-            editor.commit();
+            editor.apply();
         }
         mGLView.onResume();
     }

@@ -139,6 +139,6 @@ public class SettingsView extends FrameLayout {
         editor.putInt("HueDirection", mHueDirection.getSelectedItemPosition());
         editor.putInt("F01Attraction", Integer.parseInt(mF01Attraction.getText().toString()));
         editor.putInt("F01Drag", Integer.parseInt(mF01Drag.getText().toString()));
-        editor.commit();
+        editor.apply();
     }
 }
