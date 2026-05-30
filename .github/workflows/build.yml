@@ -36,7 +36,7 @@ jobs:
         run: |
           sdkmanager "platforms;android-36"
           sdkmanager "build-tools;36.0.0"
-          sdkmanager "ndk;29.0.0"
+          sdkmanager "ndk;29.0.14206865"
           sdkmanager "cmake;3.31.6"
 
       - name: Build Debug APK
