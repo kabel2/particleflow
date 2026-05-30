@@ -77,8 +77,8 @@ Java_com_nfaralli_particleflow_ParticlesRenderer_nativeInitParticles(
     float rgba[4];
 
     for (int i = 0; i < count; i++) {
-        r = radius * sqrtf((float)rand() / RAND_MAX);
-        theta = ((float)rand() / RAND_MAX) * 6.28318530718f;
+        r = radius * sqrtf((float)rand() / (float)RAND_MAX);
+        theta = ((float)rand() / (float)RAND_MAX) * 6.28318530718f;
         pos[i*2] = (width/2) + r*cosf(theta);
         pos[i*2+1] = (height/2) + r*sinf(theta);
         delta[i*2] = 0;
@@ -129,7 +129,7 @@ Java_com_nfaralli_particleflow_ParticlesRenderer_nativeUpdateParticles(
                 diffY = touch[i*2+1] - ptY;
                 diffSqNorm = diffX * diffX + diffY * diffY;
                 if (diffSqNorm < 0.1f) {
-                    theta = ((float)rand() / RAND_MAX) * 6.28318530718f;
+                    theta = ((float)rand() / (float)RAND_MAX) * 6.28318530718f;
                     diffX = cosf(theta);
                     diffY = sinf(theta);
                     diffSqNorm = 1;
