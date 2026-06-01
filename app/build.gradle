@@ -23,8 +23,19 @@ android {
         }
     }
 
+    signingConfigs {
+        release {
+            storeFile file('release.keystore')
+            storePassword System.getenv('KEYSTORE_PASSWORD')
+            keyPassword System.getenv('KEY_PASSWORD') ?: System.getenv('KEYSTORE_PASSWORD')
+            keyAlias System.getenv('KEY_ALIAS') ?: 'release'
+        }
+    }
     buildTypes {
         release {
+            if (file('release.keystore').exists()) {
+                signingConfig = signingConfigs.release
+            }
             minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -36,7 +47,6 @@ android {
     externalNativeBuild {
         cmake {
             path = file('src/main/cpp/CMakeLists.txt')
-            version = '3.31.6'
         }
     }
 }
