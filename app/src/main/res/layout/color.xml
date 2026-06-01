@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:text="R:" />
 
-    <com.nfaralli.particleflow.ValidatedEditText
+    <com.kabel2.particleflow.ValidatedEditText
         android:id="@+id/bgColorR"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -24,7 +24,7 @@
         android:text="G:"
         android:layout_marginStart="3dp" />
 
-    <com.nfaralli.particleflow.ValidatedEditText
+    <com.kabel2.particleflow.ValidatedEditText
         android:id="@+id/bgColorG"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -39,7 +39,7 @@
         android:text="B:"
         android:layout_marginStart="6dp" />
 
-    <com.nfaralli.particleflow.ValidatedEditText
+    <com.kabel2.particleflow.ValidatedEditText
         android:id="@+id/bgColorB"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

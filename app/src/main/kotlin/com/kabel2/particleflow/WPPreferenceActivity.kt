@@ -1,4 +1,4 @@
-package com.nfaralli.particleflow
+package com.kabel2.particleflow
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

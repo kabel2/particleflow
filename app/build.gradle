@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = 'com.nfaralli.particleflow'
+    namespace = 'com.kabel2.particleflow'
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.nfaralli.particleflow"
+        applicationId = "com.kabel2.particleflow"
         minSdk = 21
         targetSdk = 36
         versionCode = 10201

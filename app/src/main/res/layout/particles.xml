@@ -3,12 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.nfaralli.particleflow.ParticlesSurfaceView
+    <com.kabel2.particleflow.ParticlesSurfaceView
         android:id="@+id/particles_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <com.nfaralli.particleflow.GearView
+    <com.kabel2.particleflow.GearView
         android:id="@+id/gear_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

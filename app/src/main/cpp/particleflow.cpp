@@ -59,7 +59,7 @@ static float getSpeedCoef(float vx, float vy) {
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_nfaralli_particleflow_ParticlesRenderer_nativeInitParticles(
+Java_com_kabel2_particleflow_ParticlesRenderer_nativeInitParticles(
         JNIEnv* env, jobject /*thiz*/,
         jfloatArray posArr, jfloatArray deltaArr, jfloatArray colorArr,
         jint count, jfloat width, jfloat height,
@@ -100,7 +100,7 @@ Java_com_nfaralli_particleflow_ParticlesRenderer_nativeInitParticles(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_nfaralli_particleflow_ParticlesRenderer_nativeUpdateParticles(
+Java_com_kabel2_particleflow_ParticlesRenderer_nativeUpdateParticles(
         JNIEnv* env, jobject /*thiz*/,
         jfloatArray posArr, jfloatArray deltaArr, jfloatArray colorArr,
         jint count, jfloat width, jfloat height,

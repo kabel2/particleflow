@@ -22,7 +22,7 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="6dp" />
 
-            <com.nfaralli.particleflow.ValidatedEditText
+            <com.kabel2.particleflow.ValidatedEditText
                 android:id="@+id/numParticles"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -39,7 +39,7 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="6dp" />
 
-            <com.nfaralli.particleflow.ValidatedEditText
+            <com.kabel2.particleflow.ValidatedEditText
                 android:id="@+id/particleSize"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -56,7 +56,7 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="6dp" />
 
-            <com.nfaralli.particleflow.ValidatedEditText
+            <com.kabel2.particleflow.ValidatedEditText
                 android:id="@+id/numAPoints"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -79,7 +79,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/bg_color" />
 
-                <com.nfaralli.particleflow.GradientView
+                <com.kabel2.particleflow.GradientView
                     android:id="@+id/bgGradientView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -87,7 +87,7 @@
 
             </LinearLayout>
 
-            <com.nfaralli.particleflow.ColorView
+            <com.kabel2.particleflow.ColorView
                 android:id="@+id/bgColor"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -107,7 +107,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/particles_colors" />
 
-                <com.nfaralli.particleflow.GradientView
+                <com.kabel2.particleflow.GradientView
                     android:id="@+id/gradientView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -123,7 +123,7 @@
                 android:layout_marginTop="6dp"
                 android:layout_marginEnd="6dp" />
 
-            <com.nfaralli.particleflow.ColorView
+            <com.kabel2.particleflow.ColorView
                 android:id="@+id/slowColor"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -138,7 +138,7 @@
                 android:layout_marginTop="6dp"
                 android:layout_marginEnd="6dp" />
 
-            <com.nfaralli.particleflow.ColorView
+            <com.kabel2.particleflow.ColorView
                 android:id="@+id/fastColor"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -177,7 +177,7 @@
                 android:layout_marginTop="6dp"
                 android:layout_marginEnd="6dp" />
 
-            <com.nfaralli.particleflow.ValidatedEditText
+            <com.kabel2.particleflow.ValidatedEditText
                 android:id="@+id/f01_attraction"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -194,7 +194,7 @@
                 android:layout_marginTop="6dp"
                 android:layout_marginEnd="6dp" />
 
-            <com.nfaralli.particleflow.ValidatedEditText
+            <com.kabel2.particleflow.ValidatedEditText
                 android:id="@+id/f01_drag"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

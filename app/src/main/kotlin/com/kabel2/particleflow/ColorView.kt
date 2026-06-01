@@ -1,4 +1,4 @@
-package com.nfaralli.particleflow
+package com.kabel2.particleflow
 
 import android.content.Context
 import android.graphics.Color
